@@ -9,29 +9,21 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
-import io.netty.util.AttributeKey;
+
+import com.nettyKafka.utils.LogUtil;
 
 public class HttpServer {
-	static final boolean SSL = System.getProperty("ssl") != null;
-    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "9001"));
-
+	//static final boolean SSL = System.getProperty("ssl") != null;
+    static final int PORT = Integer.parseInt(System.getProperty("port",  "9001"));
+    private static final LogUtil log = new LogUtil(HttpServer.class);
 		
 
 	    public static void main(String[] args) throws Exception {
 	 
 	    
-	        // Configure SSL.
-	        final SslContext sslCtx;
-	        if (SSL) {
-	            SelfSignedCertificate ssc = new SelfSignedCertificate();
-	            sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
-	        } else {
-	            sslCtx = null;
-	        }
-
-	        // Configure the server.
+	       
+	        final SslContext sslCtx=null;
+	      
 	        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 	        EventLoopGroup workerGroup = new NioEventLoopGroup();
 	        try {
@@ -41,13 +33,16 @@ public class HttpServer {
 	             .handler(new LoggingHandler(LogLevel.INFO))
 	             .childHandler(new HttpServerInitializer(sslCtx));
 	            Channel ch = b.bind(PORT).sync().channel();
-	            System.err.println("Open your web browser and navigate to " +
-	                    (SSL? "https" : "http") + "://127.0.0.1:" + PORT + '/');
+	            log.info("Server Started...");
+	           log.info("Open your web browser and navigate to " +
+	                  "http://127.0.0.1:" + PORT + '/');
 	           
 	            ch.closeFuture().sync();
+	            
 	        } finally {
 	            bossGroup.shutdownGracefully();
 	            workerGroup.shutdownGracefully();
+	            log.info("Channel closed");
 	        }
 	    }
 

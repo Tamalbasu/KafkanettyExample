@@ -1,5 +1,7 @@
 package com.nettyKafka.kafka;
-
+/**
+ * Tamal  Basu
+ */
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -73,13 +75,13 @@ public class KafkaProducer {
 		public  void Kafka()throws Exception {
 	    	final KafkaProducer kafka = KafkaProducer.getInstance();
 	    	 kafka.initialize();
-	    	 final KeyedMessage<String, String> keyedMsg = new KeyedMessage<>("LogFile", getLogMessage());
+	    	 final KeyedMessage<String, String> keyedMsg = new KeyedMessage<>("netty", getLogMessage());
 	    	 kafka.publishMessage(keyedMsg);
 	    	 final List<KeyedMessage<String, String>> theList = new ArrayList<>();
-	    	 for (int i = 0; i < 3; i++) {
-	             final KeyedMessage<String, String> keymsg1 = new KeyedMessage<>("LogFile", String.valueOf(i),getLogMessage());
+	    	 for (int i = 0; i < 1; i++) {
+	             final KeyedMessage<String, String> keymsg1 = new KeyedMessage<>("netty", String.valueOf(i),getLogMessage());
 	             theList.add(keymsg1);
-	         }
+	    	 }
 	         kafka.publishMessage(theList);
 	         kafka.closeProducer();
 	    }

@@ -8,7 +8,6 @@ public class SimplePartitioner implements Partitioner{
 	@Override
 	public int partition(Object key, int numberOfPartitions) {
 		
-		// TODO Auto-generated method stub
 		 int partition = 0;
 	        int intKey = Integer.parseInt((String) key);
 	        if (intKey > 0) {

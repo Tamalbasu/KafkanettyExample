@@ -1,5 +1,8 @@
 package com.nettyKafka.server;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -10,11 +13,11 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -27,19 +30,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.protobuf.Internal.ListAdapter.Converter;
-import com.google.protobuf.Internal.ProtobufList;
-import com.nettyKafka.beans.RequestInputs;
-
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
-import static io.netty.handler.codec.http.HttpVersion.*;
+import com.nettyKafka.bean.RequestInputs;
+import com.nettyKafka.services.NettyKafkaService;
+import com.nettyKafka.utils.LogUtil;
 
 
 public class HttpServerHandler extends
 SimpleChannelInboundHandler<Object> {
-
+	private static final LogUtil log = new LogUtil(HttpServerHandler.class);
     private HttpRequest request;
-    /** Buffer that stores the response content */
     private final StringBuilder buf = new StringBuilder();
 
     @Override
@@ -52,13 +51,11 @@ SimpleChannelInboundHandler<Object> {
         if (msg instanceof HttpRequest) {
             HttpRequest request = this.request = (HttpRequest) msg;
 
-            if (HttpUtil.is100ContinueExpected(request)) {
-                send100Continue(ctx);
-            }
+          
 
             buf.setLength(0);
-            buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-            buf.append("===================================\r\n");
+           
+            
 
             buf.append("VERSION: ").append(request.protocolVersion()).append("\r\n");
             buf.append("HOSTNAME: ").append(request.headers().get(HttpHeaderNames.HOST, "unknown")).append("\r\n");
@@ -72,23 +69,35 @@ SimpleChannelInboundHandler<Object> {
                     buf.append("HEADER: ").append(key).append(" = ").append(value).append("\r\n");
                 }
                 buf.append("\r\n");
+                
+           
+                
+                
             }
 
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.uri());
             Map<String, List<String>> params = queryStringDecoder.parameters();
+            RequestInputs req=new RequestInputs();
             if (!params.isEmpty()) {
                 for (Entry<String, List<String>> p: params.entrySet()) {
                     String key = p.getKey();
-                    RequestInputs req=new RequestInputs();
+                    
                     List<String> vals = p.getValue();
                     for (String val : vals) {
                         buf.append("PARAM: ").append(key).append(" = ").append(val).append("\r\n");
-                        req.setName(val);
+                        if(key.equalsIgnoreCase("Id")){req.setId(val);}
+                        if(key.equalsIgnoreCase("name")){req.setName(val);}
+                        if(key.equalsIgnoreCase("Email")){req.setEmail(val);}
                     }
-                    
+                   
                 }
-               
-                //ProtobufList protoInstance = Converter.create().toProtobuf(ProtobufClass.class, pojoInstance );
+                log.debug("Send data to Service...");
+                List<String> msg1=new NettyKafkaService().ProtoInstance(req);
+                if(msg1.get(0).equalsIgnoreCase("Success")){
+                	buf.append("-----Object send to kafka------");
+                }else{
+                buf.append("Errorn in validations---"+msg1.get(1));
+                }
                 buf.append("\r\n");
             }
              
@@ -122,7 +131,6 @@ SimpleChannelInboundHandler<Object> {
                 }
 
                 if (!writeResponse(trailer, ctx)) {
-                    // If keep-alive is off, close the connection once the content is fully written.
                     ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
                 }
             }
@@ -141,7 +149,6 @@ SimpleChannelInboundHandler<Object> {
     }
 
     private boolean writeResponse(HttpObject currentObj, ChannelHandlerContext ctx) {
-        // Decide whether to close the connection or not.
         boolean keepAlive = HttpUtil.isKeepAlive(request);
         // Build the response object.
         FullHttpResponse response = new DefaultFullHttpResponse(
@@ -151,42 +158,36 @@ SimpleChannelInboundHandler<Object> {
         response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
 
         if (keepAlive) {
-            // Add 'Content-Length' header only for a keep-alive connection.
+            
             response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-            // Add keep alive header as per:
-            // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+          
             response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         }
 
-        // Encode the cookie.
         String cookieString = request.headers().get(HttpHeaderNames.COOKIE);
         if (cookieString != null) {
             Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookieString);
             if (!cookies.isEmpty()) {
-                // Reset the cookies if necessary.
                 for (Cookie cookie: cookies) {
                     response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
                 }
             }
         } else {
-            // Browser sent no cookie.  Add some.
             response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode("key1", "value1"));
             response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode("key2", "value2"));
         }
 
-        // Write the response.
+       log.info("response wwrite");
         ctx.write(response);
 
         return keepAlive;
     }
 
-    private static void send100Continue(ChannelHandlerContext ctx) {
-        FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, CONTINUE);
-        ctx.write(response);
-    }
+ 
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    	
         cause.printStackTrace();
         ctx.close();
     }
