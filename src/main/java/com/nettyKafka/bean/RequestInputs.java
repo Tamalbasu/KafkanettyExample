@@ -1,5 +1,9 @@
 package com.nettyKafka.bean;
-
+/**
+ * 
+ * @author Tamal Basu
+ *
+ */
 public class RequestInputs {
 	 private String Id;
        private String name;

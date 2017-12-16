@@ -2,6 +2,11 @@ package com.nettyKafka.kafka;
 
 import kafka.producer.Partitioner;
 import kafka.utils.VerifiableProperties;
+/**
+ * 
+ * @author Tamal Basu
+ *
+ */
 public class SimplePartitioner implements Partitioner{
 	 public SimplePartitioner(VerifiableProperties properties) {
 	    }

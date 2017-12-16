@@ -5,11 +5,19 @@ import java.util.List;
 
 import com.nettyKafka.bean.RequestInputs;
 import com.nettyKafka.utils.LogUtil;
-
+/**
+ * 
+ * @author Tamal Basu
+ *
+ */
 public class Validations {
 	private static final LogUtil log = new LogUtil(Validations.class);  
 	
-	
+	/**
+	 * 
+	 * @param req
+	 * @return
+	 */
 	public List<String> nettyKafkaValidations(RequestInputs req){
 		List<String> msg=new ArrayList<>();
       msg.add("success");

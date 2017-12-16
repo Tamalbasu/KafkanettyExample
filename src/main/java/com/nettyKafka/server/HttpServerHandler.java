@@ -34,7 +34,11 @@ import com.nettyKafka.bean.RequestInputs;
 import com.nettyKafka.services.NettyKafkaService;
 import com.nettyKafka.utils.LogUtil;
 
-
+/**
+ * 
+ * @author Tamal Basu
+ *
+ */
 public class HttpServerHandler extends
 SimpleChannelInboundHandler<Object> {
 	private static final LogUtil log = new LogUtil(HttpServerHandler.class);

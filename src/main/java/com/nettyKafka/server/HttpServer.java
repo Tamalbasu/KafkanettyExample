@@ -11,9 +11,12 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 
 import com.nettyKafka.utils.LogUtil;
-
+/**
+ * 
+ * @author Tamal Basu
+ *
+ */
 public class HttpServer {
-	//static final boolean SSL = System.getProperty("ssl") != null;
     static final int PORT = Integer.parseInt(System.getProperty("port",  "9001"));
     private static final LogUtil log = new LogUtil(HttpServer.class);
 		

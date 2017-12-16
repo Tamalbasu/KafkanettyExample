@@ -1,7 +1,5 @@
 package com.nettyKafka.kafka;
-/**
- * Tamal  Basu
- */
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -13,6 +11,11 @@ import kafka.producer.ProducerConfig;
 import org.springframework.stereotype.Component;
 
 import com.nettyKafka.utils.LogUtil;
+/**
+ * 
+ * @author Tamal Basu
+ *
+ */
 @Component
 public class KafkaProducer {
 	private static final LogUtil log = new LogUtil(KafkaProducer.class);
@@ -55,7 +58,7 @@ public class KafkaProducer {
 	    }
 	    public void publishMessage(final List<KeyedMessage<String, String>> aKeyedMsg) {
 	    	for(int i=0;i<aKeyedMsg.size();i++){
-	    		System.out.println("message"+aKeyedMsg.get(i));
+	    		log.info("message"+aKeyedMsg.get(i));
 	    	}
 	    
 	    	
@@ -75,11 +78,11 @@ public class KafkaProducer {
 		public  void Kafka()throws Exception {
 	    	final KafkaProducer kafka = KafkaProducer.getInstance();
 	    	 kafka.initialize();
-	    	 final KeyedMessage<String, String> keyedMsg = new KeyedMessage<>("netty", getLogMessage());
+	    	 final KeyedMessage<String, String> keyedMsg = new KeyedMessage<>("nettyKafka", getLogMessage());
 	    	 kafka.publishMessage(keyedMsg);
 	    	 final List<KeyedMessage<String, String>> theList = new ArrayList<>();
 	    	 for (int i = 0; i < 1; i++) {
-	             final KeyedMessage<String, String> keymsg1 = new KeyedMessage<>("netty", String.valueOf(i),getLogMessage());
+	             final KeyedMessage<String, String> keymsg1 = new KeyedMessage<>("nettyKafka", String.valueOf(i),getLogMessage());
 	             theList.add(keymsg1);
 	    	 }
 	         kafka.publishMessage(theList);

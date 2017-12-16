@@ -8,7 +8,11 @@ import com.nettyKafka.beans.Employee.Person;
 import com.nettyKafka.kafka.KafkaProducer;
 import com.nettyKafka.utils.LogUtil;
 import com.nettyKafka.validations.Validations;
-
+/**
+ * 
+ * @author Tamal Basu
+ *
+ */
 public class NettyKafkaService {
 private static final LogUtil log = new LogUtil(NettyKafkaService.class);  
 
